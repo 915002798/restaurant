@@ -1,0 +1,221 @@
+{% extends 'base_main.html' %}
+
+{% block title %}库存查询{% endblock %}
+
+{% block header %}
+    <link rel="stylesheet" type="text/css" href="/static/css/jquery.dataTables.min.css">
+    <style>
+        th{
+           border-right:solid 1px lightgray
+        }
+
+        select {
+            height: 32px;
+            width: 100px;
+            border-top: solid 1px #a7b5bc;
+            border-left: solid 1px #a7b5bc;
+            border-right: solid 1px #ced9df;
+            border-bottom: solid 1px #ced9df;
+            margin-bottom: 10px;
+        }
+
+        input {
+            height: 32px;
+            width: 200px;
+            border-top: solid 1px #a7b5bc;
+            border-left: solid 1px #a7b5bc;
+            border-right: solid 1px #ced9df;
+            border-bottom: solid 1px #ced9df;
+        }
+    </style>
+
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">库存</a></li>
+            <li><a href="#">库存查询</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        <div class="formtitle"><span>库存物料信息</span></div>
+        <table id="storageTable" class="table display cell-border"  style="border:solid 1px gray">
+            <thead style="width: 100%">
+            <tr  style="border:solid 1px #a7b5bc;background-color: gainsboro">
+                <th>库存记录</th>
+                <th>物料编号</th>
+                <th>物料名称</th>
+                <th>库存数量</th>
+                <th>入库日期</th>
+                <th>保质期</th>
+                <th>生产日期</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <br><br>
+        <div class="formtitle"><span>出库记录</span></div>
+        <table id="entryTable" class="table display cell-border"  style="border:solid 1px gray">
+            <thead>
+            <tr  style="border:solid 1px #a7b5bc;background-color: gainsboro">
+                <th>记录编号</th>
+                <th>记录时间</th>
+                <th>领取人</th>
+                <th>物料</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+
+        <br><br>
+        <div class="formtitle"><span>入库记录</span></div>
+        <table id="deliveryTable" class="table display cell-border" style="border:solid 1px gray">
+            <thead>
+            <tr style="border:solid 1px #a7b5bc;background-color: gainsboro">
+                <th>记录编号</th>
+                <th>记录时间</th>
+                <th>入库人员</th>
+                <th>物料</th>
+            </tr>
+            </thead>
+            <tbody>
+            </tbody>
+        </table>
+    </div>
+
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript" src="/static/js/jquery-1.12.3.min.js"></script>
+    <script type="text/javascript" charset="utf8" src="/static/js/jquery.dataTables.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+
+            //如下代码初始化
+            $('#storageTable').DataTable({
+                "ajax": {
+                    url: '/warehouse/query2/',
+                    dataSrc: 'storage',
+                },
+                "columns": [
+                    {"data": "id"},
+                    {"data": "material_id"},
+                    {"data": "name"},
+                    {"data": "num"},
+                    {"data": "date"},
+                    {"data": "gd"},
+                    {"data": "md"},
+                ],
+                language: {
+                    "sProcessing": "处理中...",
+                    "sLengthMenu": "显示 _MENU_ 项结果",
+                    "sZeroRecords": "没有匹配结果",
+                    "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+                    "sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+                    "sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+                    "sInfoPostFix": "",
+                    "sSearch": "搜索:",
+                    "sUrl": "",
+                    "sEmptyTable": "表中数据为空",
+                    "sLoadingRecords": "载入中...",
+                    "sInfoThousands": ",",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": "上页",
+                        "sNext": "下页",
+                        "sLast": "末页"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": 以升序排列此列",
+                        "sSortDescending": ": 以降序排列此列"
+                    },
+                }
+            });
+
+            //初始化
+
+            $('#entryTable').DataTable({
+                "ajax": {
+                    url: "/warehouse/query2/",
+                    dataSrc: 'entry'
+                },
+                "columns": [
+                    {"data": "id"},
+                    {"data": "date"},
+                    {"data": "person"},
+                    {"data": "materials"},
+                ],
+                language: {
+                    "sProcessing": "处理中...",
+                    "sLengthMenu": "显示 _MENU_ 项结果",
+                    "sZeroRecords": "没有匹配结果",
+                    "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+                    "sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+                    "sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+                    "sInfoPostFix": "",
+                    "sSearch": "搜索:",
+                    "sUrl": "",
+                    "sEmptyTable": "表中数据为空",
+                    "sLoadingRecords": "载入中...",
+                    "sInfoThousands": ",",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": "上页",
+                        "sNext": "下页",
+                        "sLast": "末页"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": 以升序排列此列",
+                        "sSortDescending": ": 以降序排列此列"
+                    },
+                }
+            });
+            $('#deliveryTable').DataTable({
+                "ajax": {
+                    url: "/warehouse/query2/",
+                    dataSrc: function (data) {
+                        data = data['delivery'];
+                        return data;
+                    } //这里是针对数据需要转换时的写法，此处仍可按照前两个表格的简单写法写为 【dataSrc:'delivery'】
+                },
+                "columns": [
+                    {"data": "id"},
+                    {"data": "date"},
+                    {"data": "person"},
+                    {"data": "materials"},
+                ],
+                language: {
+                    "sProcessing": "处理中...",
+                    "sLengthMenu": "显示 _MENU_ 项结果",
+                    "sZeroRecords": "没有匹配结果",
+                    "sInfo": "显示第 _START_ 至 _END_ 项结果，共 _TOTAL_ 项",
+                    "sInfoEmpty": "显示第 0 至 0 项结果，共 0 项",
+                    "sInfoFiltered": "(由 _MAX_ 项结果过滤)",
+                    "sInfoPostFix": "",
+                    "sSearch": "搜索:",
+                    "sUrl": "",
+                    "sEmptyTable": "表中数据为空",
+                    "sLoadingRecords": "载入中...",
+                    "sInfoThousands": ",",
+                    "oPaginate": {
+                        "sFirst": "首页",
+                        "sPrevious": "上页",
+                        "sNext": "下页",
+                        "sLast": "末页"
+                    },
+                    "oAria": {
+                        "sSortAscending": ": 以升序排列此列",
+                        "sSortDescending": ": 以降序排列此列"
+                    },
+                }
+            })
+        });
+        $(function () {
+        })
+    </script>
+{% endblock %}

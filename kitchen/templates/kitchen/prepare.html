@@ -1,0 +1,147 @@
+{% extends 'base_main.html' %}
+
+{% block title %} 预加工管理 {% endblock %}
+
+{% block header %}
+    <style>
+        select {
+            height: 32px;
+            width: 150px;
+            border-top: solid 1px #a7b5bc;
+            border-left: solid 1px #a7b5bc;
+            border-right: solid 1px #ced9df;
+            border-bottom: solid 1px #ced9df;
+        }
+
+        th, td {
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            height: 30px;
+            border-bottom: solid 1px #ced9df;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">厨房</a></li>
+            <li><a href="#">预加工管理</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        <div class="formtitle"><span>预加工计划</span></div>
+        <table class="tablelist">
+            <thead>
+            <tr>
+                <th style="width: 70px"><input name="" type="checkbox" value=""/></th>
+                <th>计划编号</th>
+                <th>菜品名</th>
+                <th>制定时间</th>
+                <th>计划数量</th>
+                <th>当前量</th>
+                <th>已用量</th>
+            </tr>
+            </thead>
+            <tbody id="prepare_table">
+            <tr>
+                <td><input name="" type="checkbox" value=""/></td>
+                <td>1</td>
+                <td>凉拌黄瓜</td>
+                <td>2020-01-01</td>
+                <td>10</td>
+                <td>7</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td><input name="" type="checkbox" value=""/></td>
+                <td>1</td>
+                <td>凉拌黄瓜</td>
+                <td>2020-01-01</td>
+                <td>10</td>
+                <td>7</td>
+                <td>3</td>
+            </tr>
+            <tr>
+                <td><input name="" type="checkbox" value=""/></td>
+                <td>1</td>
+                <td>凉拌黄瓜</td>
+                <td>2020-01-01</td>
+                <td>10</td>
+                <td>7</td>
+                <td>3</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="" style="margin-top: 20px;margin-right:20px;float: right;">
+            <p class="choices">
+                <button class="btn btn-danger" id="btn_del">刷新</button>
+                <button class="btn btn-danger" id="btn_del">删除选中项</button>
+            </p>
+        </div>
+        <br><br><br><br>
+        <div class="formtitle"><span>添加/变更预加工计划</span></div>
+        <form class="form-vertical" action="#" method="post">
+            {% csrf_token %}
+            <ul class="forminfo">
+                <li><label for="prepare_id">计划编号</label>
+                    <input type="text" name="prepare_id" id="prepare_id" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="prepare_id_err" style="color: red;"></div>
+                </li>
+                <li><label for="food_name">菜品</label>
+                    <select name="food_name" required="" id="food_name">
+                        <option value="0" selected="">--- 请选择 ---</option>
+                        {% for food in foods %}
+                            <option value="{{ food.pk }}">{{ food.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="food_name_err" style="color: red;"></div>
+                </li>
+                <li><label for="total">计划总量</label>
+                    <input type="text" name="total" id="total" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="total_err" style="color: red;"></div>
+                </li>
+                <li><label for="num">当前量</label>
+                    <input type="text" name="num" id="num" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="num_err" style="color: red;"></div>
+                </li>
+                <li><label for="used">已用量</label>
+                    <input type="text" name="used" id="used" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="used_err" style="color: red;"></div>
+                </li>
+                <li><label for="button">&nbsp;</label>
+                    <input name="" type="button" id="button" class="btn confirmPrepare" value="提交"/>
+                </li>
+            </ul>
+        </form>
+    </div>
+{% endblock %}
+
+{% block footerjs %}
+
+    <!-- 轮询表格内容 -->
+    <script type="text/javascript">
+    $(function () {
+        var socket = new WebSocket("ws://"+window.location.host+"/kitchen/prepare/");
+        socket.open = function(){
+            console.log('WebSocket opened.')
+        };
+        var del_cache = {};
+        socket.onmessage =function (e) {
+            console.log('message:' +e.data);
+        }
+
+    })
+
+
+    </script>
+{% endblock %}

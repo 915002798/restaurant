@@ -1,0 +1,127 @@
+{% extends 'base_main.html' %}
+
+{% block title %}领料登记{% endblock %}
+
+{% block header %}
+    <style>
+        p {
+            margin-top: 20px;
+            margin-right: 40px;
+            float: right;
+        }
+
+        .btn {
+            margin-left: 20px;
+        }
+
+        .btn-info {
+            width: 60px;
+            background: #3eafe0;
+        }
+
+        .btn-success {
+            width: 100px;
+            background: lightseagreen;
+        }
+
+        select, input {
+            height: 28px;
+            width: 230px;
+            border: solid 1px #ced9df;
+            font-size: 14px;
+        }
+
+        .tablelink {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        td {
+            border-bottom: solid 1px #ced9df;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">库存</a></li>
+            <li><a href="#">领料登记</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        <div class="formtitle"><span>领用明细</span></div>
+        <table class="tablelist">
+            <thead>
+            <tr>
+                <th>序号</th>
+                <th>物料名称</th>
+                <th>领用数量</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody id="entry_table">
+            </tbody>
+        </table>
+        <p class="choices">
+            <button class="btn btn-info" id="btn_del" onclick="insertLine()">添加</button>
+            <button class="btn btn-success" id="btn_upd" onclick="submit()">确认领用</button>
+        </p>
+    </div>
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript" charset="utf8" src="/static/js/jquery-3.3.1.js"></script>
+    <script type="text/javascript">
+        var materials = JSON.parse("{{ storage | safe }}".replace(/'/g, '"'));//1.JSON.parse(): 将字符串数据转换为 JavaScript 对象; 2.注意JavaScript中str.replace()的用法。
+        //插入
+        function insertLine() {
+            var count = $('#entry_table').children('tr').length + 1;
+            var options = "";
+            $.each(materials, function (key, val) {
+                options = options + "<option>" + key + "</option>";
+            });
+            $('#entry_table').append('<tr id="line' + count + '"><td id="count' + count + '" style="width: 10%">' + count + '</td>' +
+                '<td style="width: 40%"><select id="material' + count + '">' + options + '</select></td><td style="width: 40%">' +
+                '<input type="text" id="want' + count + '" value="0"/></td><td style="width: 10%">' +
+                '<a class="tablelink" onclick="deleteLine(this)" title="Delete" id="' + count + '">×</a></td></tr>');
+        }
+
+        //删除
+        function deleteLine(e) {
+            $('#line' + e.getAttribute('id')).remove();
+        }
+
+        //提交
+        function submit() {
+            var count = $('#entry_table').children('tr').length + 1;
+            var results = {};
+            var send = true;
+            for (i = 1; i < count; i++) {
+                var material = $('#material' + i).val();
+                var want = $('#want' + i).val();
+
+                if (want > materials[material]['num']) {
+                    alert(material + '超出库存数量' + materials[material]['mun']);
+                    send = false;
+                } else {
+                    results[material] = want;
+                }
+            }
+            if (send) {
+                $.ajax({
+                    type: "POST",
+                    url: "/warehouse/entry/",
+                    data: {'results': JSON.stringify(results)},
+                    success: function (result) {
+                        alert(result['status'])
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(errorThrown)
+                    },
+                });
+            }
+        }
+    </script>
+{% endblock %}

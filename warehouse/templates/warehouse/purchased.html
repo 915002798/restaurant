@@ -1,0 +1,116 @@
+{% extends 'base_main.html' %}
+
+{% block title %}采购台账{% endblock %}
+
+{% block header %}
+    <style>
+        td {
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 230px;
+            height: 30px;
+            border-bottom: solid 1px #ced9df;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">采购</a></li>
+            <li><a href="#">采购台账</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        <div class="formtitle"><span>采购记录</span></div>
+        <table class="tablelist" style="table-layout:fixed" id="querytable">
+            <thead>
+            <tr>
+                <th style="width: 100px">采购单编号</th>
+                <th style="width: 160px">签订日期</th>
+                <th style="width: 160px">收货期限</th>
+                <th>订单总价</th>
+                <th>负责人</th>
+                <th>供应商</th>
+                <th style="width: 80px">已支付</th>
+                <th style="width: 80px">已收货</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if page %}
+                {% for purchase in page %}
+                    <tr id="purchase{{ purchase.id }}">
+                        <td>{{ purchase.id }}</td>
+                        <td>{{ purchase.date }}</td>
+                        <td>{{ purchase.term }}</td>
+                        <td>￥ {{ purchase.price }} 元</td>
+                        <td>{{ purchase.person }}</td>
+                        <td>{{ purchase.supplier }}</td>
+                        <td>{% if purchase.paid == 1 %}是{% else %}否{% endif %}</td>
+                        <td>{% if purchase.received == 1 %}是{% else %}否{% endif %}</td>
+                        <td><a class="tablelink" onclick="detail(this)" id="detail{{ purchase.id }}">详情</a>
+                            <a class="tablelink" onclick="del(this)" id="del{{ purchase.id }}"> 删除</a></td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+        {% include 'page.html' %}
+    </div>
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript">
+
+        //详细信息
+        function detail(elem) {
+            if ($('#detailLine').length > 0) {
+                $('#detailLine').remove();
+                return
+            }
+            var id = elem.id.substring(6);
+            $.ajax({
+                type: "POST",
+                url: "/warehouse/purchased/",
+                data: {'command': 'query', 'id': id},
+                success: function (result) {
+                    gen_table(id, result['content'])
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            })
+        }
+
+        //删除
+        function del(elem) {
+            var id = elem.id.substring(3);
+            $.ajax({
+                type: "POST",
+                url: "/warehouse/purchased/",
+                data: {'command': 'delete', 'id': id},
+                success: function (result) {
+                    alert(result['status']);
+                    $(window).attr('location', '/warehouse/purchased/');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                },
+            })
+        }
+
+        //添加详情数据表格
+        function gen_table(id, content) {
+            var tbody = '';
+            $.each(content, function (index, item) {
+                tbody += '<tr><td>' + (index + 1) + '</td><td>' + item['material'] + '</td><td>' + item['num'] + '</td><td>' + item['price'] + '</td></tr>';
+            });
+            $('#purchase' + id).after('<tr id="detailLine"><td colspan="9"><table class="tablelist"><thead><tr><th>#' + id +
+                '</th><th>名称</th><th>数量</th><th>单价</th></tr></thead><tbody>' + tbody + '</tbody></table></td></tr>');
+        }
+    </script>
+{% endblock %}

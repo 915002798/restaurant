@@ -1,0 +1,46 @@
+{% extends 'base_main.html' %}
+
+{% block right %}
+
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">首页</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        <div class="mainindex">
+            <div class="welinfo">
+                <span><img src="/static/images/sun.png" alt="天气"/></span>
+                <b>你好！{{ user }}，欢迎使用信息管理系统！</b>
+                <a href="#">帐号设置</a>
+            </div>
+        </div>
+
+
+        <div class="formtitle"><span>今日推荐</span></div>
+
+        <div class="tools">
+            <ul class="toolbar">
+                <li class="click"><span><img src="/static/images/t01.png"/></span>添加</li>
+                <li class="click"><span><img src="/static/images/t02.png"/></span>修改</li>
+                <li><span><img src="/static/images/t03.png"/></span>删除</li>
+                <li><span><img src="/static/images/t04.png"/></span>统计</li>
+            </ul>
+        </div>
+
+        <ul class="classlist">
+            {% for food in foods %}
+                <li>
+                    <span><img style="width: 150px" src="{{ food.image }}"/></span>
+                    <div class="lright">
+                        <h2>{{ food.name }}</h2>
+                        <p>预备数：10份<br/>已销售：7份<br/>未销售：3份</p>
+                        <a class="enter">进入详情</a>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+
+    </div>
+{% endblock %}

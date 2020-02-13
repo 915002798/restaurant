@@ -1,0 +1,102 @@
+{% extends 'base_main.html' %}
+
+{% block title %} 生产管理 {% endblock %}
+
+{% block header %}
+    <style>
+        .dataTables_length {
+            height: 34px;
+            color: #878787;
+            margin: 7px 5px 0;
+            position: relative;
+            left: 5px;
+            top: -2px;
+            width: 100%;
+            text-align: -moz-left;
+        }
+
+        .input_date {
+            border: solid 1px #ced9df;
+            text-align: center;
+        }
+
+        .input_date, nobr, label {
+            font-size: 16px;
+        }
+
+        td {
+            border-bottom: solid 1px #ced9df;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">厨房</a></li>
+            <li><a href="#">生产管理</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        <div class="formtitle"><span>订单菜品工位分配一览</span></div>
+        <div id="DataTables_Table_0_length" class="dataTables_length">
+            <p id="choices_top">
+                <nobr>
+                    筛选：
+                    <input type="checkbox" name="state_cb" checked="checked" id="indistributed" value="未分配">
+                    <label for="indistributed">未分配</label>
+                    <input type="checkbox" name="state_cb" checked="checked" id="distributed" value="已分配">
+                    <label for="distributed">已分配</label>
+                    <input type="checkbox" name="state_cb" checked="checked" id="finished" value="已完成">
+                    <label for="finsihed">已完成</label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    日期选择：
+                    <input type="datetime-local" class="input_date" value="" id="t_start">-
+                    <input type="datetime-local" class="input_date" value="" id="t_end">
+                </nobr>
+            </p>
+        </div>
+        <table class="tablelist">
+            <thead>
+            <tr>
+                <th></th>
+                <th>订单编号</th>
+                <th>下单时间</th>
+                <th>菜品名</th>
+                <th>备注</th>
+                <th>状态</th>
+                <th>工位编号</th>
+                <th>变更工位编号</th>
+            </tr>
+            </thead>
+            <tbody id="distr_table">
+            <tr>
+                <td></td>
+                <td>1</td>
+                <td>2019-12-20 18:10:22</td>
+                <td>凉拌黄瓜</td>
+                <td>无</td>
+                <td>未完成</td>
+                <td>2</td>
+                <td>无</td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>1</td>
+                <td>2019-12-20 18:10:22</td>
+                <td>凉拌黄瓜</td>
+                <td>无</td>
+                <td>未完成</td>
+                <td>2</td>
+                <td>无</td>
+            </tr>
+            </tbody>
+        </table>
+        <div class="" style="margin-top: 20px;margin-right: 20px;float: right;">
+            <p class="choices">
+                <button class="btn btn-danger" id="btn_del">删除选中项</button>
+                <button class="btn btn-warning" style="margin-left: 20px;" id="btn_upd">确认工位变更</button>
+            </p>
+        </div>
+    </div>
+{% endblock %}

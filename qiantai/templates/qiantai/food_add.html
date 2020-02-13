@@ -1,0 +1,128 @@
+{% extends 'base_main.html' %}
+
+{% block title %} 添加菜品 {% endblock %}
+
+{% block header %}
+
+    <style type="text/css">
+        select {
+            height: 32px;
+            width: 100px;
+            border-top: solid 1px #a7b5bc;
+            border-left: solid 1px #a7b5bc;
+            border-right: solid 1px #ced9df;
+            border-bottom: solid 1px #ced9df;
+        }
+    </style>
+
+{% endblock %}
+
+{% block right %}
+
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">前台</a></li>
+            <li><a href="{% url 'qiantai:food' num=1 %}">菜品管理</a></li>
+            <li><a href="#">添加菜品</a></li>
+        </ul>
+    </div>
+
+    <div class="formbody">
+
+        <div class="formtitle"><span>基本信息</span></div>
+
+        <form id="food_add_form" class="form-vertical" action="/qiantai/food_add/" method="post"
+              enctype="multipart/form-data" onsubmit="return food_add()">
+            {% csrf_token %}
+            <ul class="forminfo">
+                <li><label for="name">菜品名:</label>
+                    <input name="name" type="text" class="dfinput" id="name"/>
+                    <i>菜品名不能超过16个字符(汉字也算一个字符)</i>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="name_err" style="color: red;"></div>
+                </li>
+
+                <li><label for="describe">描述:</label>
+                    <textarea name="describe" cols="" rows="" class="textinput" id="describe"></textarea></li>
+                <li><label for="image">菜品图片:</label>
+                    <input type="file" name="image" id="image" style="margin-top: 5px;">
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="image_err" style="color: red;"></div>
+                </li>
+                <li><label for="type">类别:</label>
+                    <select name="type" required="" id="type">
+                        <option value="0" selected="">--- 请选择 ---</option>
+                        {% for foodtype in foodtypes %}
+                            <option value="{{ foodtype.pk }}">{{ foodtype.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="type_err" style="color: red;"></div>
+                </li>
+                <li><label for="price">单价(￥):</label>
+                    <input name="price" type="number" class="dfinput" id="price" step="0.01" value="0.00"
+                           style="height: 32px;width: 100px;"/> 元
+                    <i>（保留两位小数）</i>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="price_err" style="color: red;"></div>
+                </li>
+
+                <li>
+                    <div class="checkbox-row">
+                        <label class="vCheckboxLabel" for="available">可销售:</label>
+                        <input type="checkbox" name="available" id="available" checked="" style="margin-top: 11px;">
+                    </div>
+                </li>
+                <li>
+                    <div>
+                        <label class="required" for="score">评分:</label>
+                        <input type="number" name="score" value="0" class="dfinput" style="height: 32px;width: 100px;"
+                               required="" id="score">
+                        <i>评分在0~100之间，默认初始为0</i>
+                    </div>
+                </li>
+                <li><label for="submit">&nbsp;</label>
+                    <input name="" type="submit" id="submit" class="btn" value="确认保存"/></li>
+            </ul>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript">
+
+        function food_add() {
+            //获取输入框的值
+            var name = $('#name').val();
+            var image = $('#image').val();
+            var type = $('#type').val();
+            var price = $('#price').val();
+            var flag = true;
+
+            //简单校验
+            if (name.length > 16 || name.length < 1) {
+                $('#name_err').text('菜品名称不正确！');
+                flag = false;
+            }
+
+            if (!image) {
+                $('#image_err').text('请上传菜品图片！');
+                flag = false;
+            }
+
+            if (type < 1) {
+                $('#type_err').text('请选择菜品类别！');
+                flag = false;
+            }
+
+            if (price < 1) {
+                $('#price_err').text('价格输入不正确！');
+                flag = false;
+            }
+            return flag
+        }
+
+    </script>
+{% endblock %}

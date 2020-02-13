@@ -1,0 +1,220 @@
+{% extends 'base_main.html' %}
+
+{% block header %}
+    <style>
+        .table-bordered {
+            border: 1px solid #ddd;
+            width: 500px;
+        }
+
+        th, td {
+            border-top: solid 1px #a7b5bc;
+            border-left: solid 1px #a7b5bc;
+            border-right: solid 1px #ced9df;
+            border-bottom: solid 1px #ced9df;
+            height: 34px;
+        }
+
+        .btn {
+            height: 34px;
+            width: 100px;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">采购</a></li>
+            <li><a href="#">采购订单</a></li>
+        </ul>
+    </div>
+
+    {% if ok_msg != None %}
+        <div style="background-color:green;height: 50px;width: auto;">
+            &nbsp;&nbsp;&nbsp;<b style="color: white;line-height: 50px;">√{{ ok_msg }}</b>
+        </div>
+    {% endif %}
+    {% if err_msg != None %}
+        <div style="background-color:red;height: 50px;width: auto;">
+            &nbsp;&nbsp;&nbsp;<b style="color: white;line-height: 50px;">×{{ err_msg }}</b>
+        </div>
+    {% endif %}
+
+    <!-- 内容  -->
+    <div class="rightinfo">
+        <br>
+        <div class="formtitle"><span>采购订单导入</span></div>
+        <div id="purchase-upload">
+            <input type="file" name="file" id="file_upload">
+            <input type="button" value="上传" style="width:40px;height: 20px;border: solid 1px #a7b5bc;"
+                   onclick="fileUpload()">
+        </div>
+        <div id="purchase-content" style="display: none">
+            {#<div id="purchase-content">#}
+            <table class="table-bordered">
+                <tbody>
+                <tr>
+                    <th style="width: 80px;">需方:</th>
+                    <td>&nbsp;&nbsp;<strong id="buyer_name"></strong></td>
+                </tr>
+                <tr>
+                    <th>联系人:</th>
+                    <td>&nbsp;&nbsp;<strong id="buyer_person"></strong></td>
+                </tr>
+                <tr>
+                    <th>联系方式:</th>
+                    <td>&nbsp;&nbsp;<strong id="buyer_phone"></strong></td>
+                </tr>
+                <tr>
+                    <th>需方地址:</th>
+                    <td>&nbsp;&nbsp;<strong id="buyer_address"></strong></td>
+                </tr>
+                <tr>
+                    <th>签订日期:</th>
+                    <td>&nbsp;&nbsp;<strong id="date"></strong></td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <br>
+            <table class="table-bordered">
+                <tbody>
+                <tr>
+                    <th style="width: 80px;">供方:</th>
+                    <td>&nbsp;&nbsp;<strong id="supplier_name"></strong></td>
+                </tr>
+                <tr>
+                    <th>联系人:</th>
+                    <td>&nbsp;&nbsp;<strong id="supplier_person"></strong></td>
+                </tr>
+                <tr>
+                    <th>联系方式:</th>
+                    <td>&nbsp;&nbsp;<strong id="supplier_phone"></strong></td>
+                </tr>
+                <tr>
+                    <th>供方地址:</th>
+                    <td>&nbsp;&nbsp;<strong id="supplier_address"></strong></td>
+                </tr>
+                <tr>
+                    <th>收货期限:</th>
+                    <td>&nbsp;&nbsp;<strong id="term"></strong></td>
+                </tr>
+                </tbody>
+            </table>
+            <br>
+            <br>
+            <table style="width: 70%">
+                <thead>
+                <tr>
+                    <th class="head0" style="background-color: #b8ceda;color: #0b3a58;"></th>
+                    <th class="head1" style="background-color: #b8ceda;color: #0b3a58;">名称</th>
+                    <th class="head0 right" style="background-color: #b8ceda;color: #0b3a58;">数量</th>
+                    <th class="head1 right" style="background-color: #b8ceda;color: #0b3a58;">单位</th>
+                    <th class="head0 right" style="background-color: #b8ceda;color: #0b3a58;">单价</th>
+                </tr>
+                </thead>
+                <tbody id="materials_table"></tbody>
+            </table>
+            <br>
+            <br>
+            <table style="width: 70%">
+                <tbody>
+                <tr>
+                    <th class="msg-invoice" style="width:100px;background-color: #b8ceda;color: #0b3a58;"><h4>
+                        支付方式: </h4></th>
+                    <th style="width: 100px"><a href="#" class="tip-bottom" id="method"></a></th>
+                    <th style="width: 30px;background-color: #b8ceda;color: #0b3a58;"><strong>总价</strong></th>
+                    <th style="width: 60px"><strong id="total_price"></strong></th>
+                    <th style="width: 60px;background-color: #b8ceda;color: #0b3a58;"><strong>已支付</strong></th>
+                    <th style="width: 30px"><strong id="paid"></strong></th>
+                    <th style="width: 60px;background-color: #b8ceda;color: #0b3a58;"><strong>已到货</strong></th>
+                    <th style="width: 30px"><strong id="received"></strong></th>
+                </tr>
+                </tbody>
+            </table>
+            <br><br><br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="button" class="btn" onclick="invoice_confirm()">确认提交</button>
+            <br><br><br><br><br>
+        </div>
+    </div>
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript">
+        var invoice;
+
+        //上传文件
+        function fileUpload() {
+            var form_data = new FormData();
+            var file_info = $('#file_upload')[0].files[0];
+            form_data.append('file', file_info);
+            console.log(form_data);
+            if (file_info == undefined) {
+                alert('你没有选择任何文件！');
+                return false
+            }
+            $.ajax({
+                url: '/warehouse/purchase/',
+                type: 'POST',
+                data: form_data,
+                processData: false,  // tell jquery not to process the data
+                contentType: false, // tell jquery not to set contentType
+                success: function (result) {
+                    $('#purchase-upload').hide();   //hide() 方法隐藏被选元素。
+                    $('#purchase-content').show();
+                    gen_invoice(result['content']);
+                    invoice = result['content'];
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            })
+        }
+
+        //填充数据到表格
+        function gen_invoice(content) {
+            $('#buyer_name').text(content['buyer']['name']);
+            $('#buyer_person').text(content['buyer']['person']);
+            $('#buyer_phone').text(content['buyer']['phone']);
+            $('#buyer_address').text(content['buyer']['address']);
+            $('#date').text(content['date']);
+            $('#supplier_name').text(content['supplier']['name']);
+            $('#supplier_person').text(content['supplier']['person']);
+            $('#supplier_phone').text(content['supplier']['phone']);
+            $('#supplier_address').text(content['supplier']['address']);
+            $('#term').text(content['term']);
+            $.each(content['materials'], function (index, item) {
+                $('#materials_table').append('<tr><td>&nbsp;&nbsp;' + (index + 1) + '</td><td>&nbsp;&nbsp;' +
+                    item['name'] + '</td><td>&nbsp;&nbsp;' + item['num'] + '</td><td>&nbsp;&nbsp;' +
+                    item['unit'] + '</td><td>&nbsp;&nbsp;' + item['price'] + '</td></tr>');
+            });
+            $('#method').text(content['method']);
+            $('#paid').text(content['paid']);
+            $('#received').text(content['received']);
+            $('#total_price').text('￥' + content['price']);
+        }
+
+        //确认提交
+        function invoice_confirm() {
+            if (invoice == undefined) {
+                alert('订单不存在！');
+                return false
+            }
+            console.log(invoice);
+            $.ajax({
+                type: 'POST',
+                url: '/warehouse/purchase_confirm/',
+                data: {'invoice': JSON.stringify(invoice)},
+                datatype: 'text',
+                success: function (result) {
+                    alert(result['status']);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown);
+                }
+            })
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,398 @@
+{% extends 'base_main.html' %}
+{% load static %}
+
+{% block title %} 点单 {% endblock %}
+
+{% block header %}
+    <style type="text/css">
+        select {
+            height: 32px;
+            width: 100px;
+            border-top: solid 1px #a7b5bc;
+            border-left: solid 1px #a7b5bc;
+            border-right: solid 1px #ced9df;
+            border-bottom: solid 1px #ced9df;
+        }
+
+        td {
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 230px;
+            height: 30px;
+        }
+
+        .text_box {
+            height: 20px;
+            width: 30px;
+            border: solid 1px #e9f2f7;
+        }
+
+    </style>
+
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">前台</a></li>
+            <li><a href="#">点单</a></li>
+        </ul>
+    </div>
+
+    <div class="formbody">
+        <div class="formtitle"><span>今日菜单</span></div>
+
+        <ul class="forminfo">
+            <li><label for="food_id">菜品ID:</label>
+                <input type="number" name="food_id" id="food_id" class="dfinput" onblur="get_food_by_id(this.value)"/>
+                <b id="btn1" style="color: #FB7155"></b>
+                <!-- 错误提示信息 -->
+                <div class="col-md-12" id="food_id_err" style="color: red;"></div>
+            </li>
+            <li><label for="food_name">菜品名称:</label>
+                <input type="text" name="food_name" id="food_name" class="dfinput"
+                       onblur="get_food_by_name(this.value)"/>
+                <b id="btn2" style="color: #FB7155"></b>
+                <!-- 错误提示信息 -->
+                <div class="col-md-12" id="food_name_err" style="color: red;"></div>
+            </li>
+        </ul>
+
+
+        {% for type,foods in menu.items %}
+            <h5>{{ type }}</h5>
+            <table class="imgtable" style=" width:50%;">
+                <thead>
+                <tr>
+                    <th width="100px;">缩略图</th>
+                    <th>编号</th>
+                    <th>菜品名</th>
+                    <th>单价</th>
+                    <th>数量</th>
+                </tr>
+                </thead>
+                <tbody id="tbody">
+                {% for food in foods %}
+                    <tr class="fo_item" style="border-bottom: dotted 1px #c7c7c7;">
+                        <td class="imgtd"><img style="width: 80px;" src="{{ food.image }}"/></td>
+                        <td class="fo_id">{{ food.id }}</td>
+                        <td class="fo_name">{{ food.name }}</td>
+                        <td class="fo_price">{{ food.price }}</td>
+                        <td>
+                            <button style="width: 20px" class="min" onclick="">-</button>
+                            <input class="text_box" type="text" name="num" id="num" min="0" placeholder="0">
+                            <button style="width: 20px" class="add" onclick="">+</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% endfor %}
+
+        <div class="formtitle"><span>订单基本信息</span></div>
+
+        <form id="food_add_form" class="form-vertical" action="#" method="post">
+            {% csrf_token %}
+            <ul class="forminfo">
+                <li><label for="state">已选菜品:</label>
+                    <ul class="unstyled">
+                    </ul>
+                </li>
+                <li><label for="type">类别:</label>
+                    <select name="type" id="type" required="">
+                        <option value="" selected="">--- 请选择 ---</option>
+                        <option value="堂食">堂食</option>
+                        <option value="打包">打包</option>
+                        <option value="外送">外送</option>
+                    </select>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="type_err" style="color: red;"></div>
+                </li>
+                <li><label>总价(￥):</label>
+                    <p id="order_total" style="height: 30px"><label id="total_price"></label></p>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="price_err" style="color: red;"></div>
+                </li>
+                <li><label for="guest">* 顾客:</label>
+                    <input type="text" name="guest" id="guest" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="guest_err" style="color: red;"></div>
+                </li>
+                <li><label for="phone">* 手机:</label>
+                    <input type="text" name="phone" id="phone" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="phone_err" style="color: red;"></div>
+                </li>
+                <li><label for="address">* 地址:</label>
+                    <input type="text" name="address" id="address" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="address_err" style="color: red;"></div>
+                </li>
+                <li><i>（注：带 * 号的项为订单类别为“外送”时的必填项，其他类别选填即可。）</i></li>
+                <li><label for="button">&nbsp;</label>
+                    <input name="" type="button" id="button" class="btn confirmOrder" value="确认保存"/>&nbsp;&nbsp;&nbsp;
+                    <button id="cancelTHISorder" type="button" class="btn cancelOrder">取消订单</button>
+                </li>
+            </ul>
+        </form>
+    </div>
+
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript">
+        //查询菜品==id
+        function get_food_by_id(id) {
+            $.ajax({
+                url: '/qiantai/getFoodById/',
+                data: {'id': id},
+                type: 'GET',
+                success: function (result) {
+                    var food_id = result.food_id;
+                    var food_name = result.food_name;
+                    $('#btn1').text('编号：' + food_id + '  名称：' + food_name);
+                },
+                error: function () {
+                    $('#btn1').text('菜品不存在！');
+                }
+            })
+        }
+
+        //查询菜品==名称
+        function get_food_by_name(name) {
+            $.ajax({
+                url: '/qiantai/getFoodByName/',
+                data: {'name': name},
+                type: 'GET',
+                success: function (result) {
+                    //result:视图函数返回值，也就是后端返回前端的值。
+                    var food_id = result.food_id;
+                    var food_name = result.food_name;
+                    $('#btn2').text('编号：' + food_id + '  名称：' + food_name);
+                },
+                error: function () {
+                    $('#btn2').text('菜品不存在！');
+                }
+            })
+        }
+
+        // 关于add按钮
+        $(".add").click(function () {
+            var t = $(this).parent().find('input[class=text_box]');
+
+            if (t.val() == "" || undefined || null) {
+                t.val(0);
+            }
+            t.val(parseInt(t.val()) + 1);
+            setTotal();  //调用计算总价格方法
+
+            var itemName = $(".fo_name:eq(" + $(this).index(".add") + ")").text();
+            var selectNum = $(this).parent().find('input[class=text_box]').val();
+
+            if (document.getElementById(itemName)) {
+                $("b[class='SelectedNumShow'][id=" + itemName + "]").replaceWith('<b style="color: #222222" class="SelectedNumShow" id="' + itemName + '">数量： ' + selectNum + '</b>')
+            } else {
+                var itemId = $(".fo_id:eq(" + $(this).index(".add") + ")").text();
+                $(".unstyled").append(
+                    '<li class="clearfix" style="width: 550px" id="' + itemName + '">' +
+                    '<span style="display:none" class="foo_id" id="' + itemId + '">' + itemId + '</span>' +
+                    '<span style="float:left;width:120px;margin-right:20px">' + itemName + '</span>' +
+                    '<input style="width: 300px" class="text_box addNotes" type="text" value="" placeholder="备注">' +
+                    '<b style="color: #222222" class="SelectedNumShow" id="' + itemName + '">数量： ' + selectNum + '</b>' +
+                    '<button class="removeSelected" id="' + itemName + '" style="float:right;width: 20px;" type="button">×' +
+                    '</button>' +
+                    '</li>'
+                )
+            }
+        });
+        $(".min").click(function () {
+            var t = $(this).parent().find('input[class*=text_box]');
+            if (t.val() == "" || undefined || null) {
+                t.val(0);
+            }
+            t.val(parseInt(t.val()) - 1);
+            if (parseInt(t.val()) < 0) {
+                t.val(0);
+            }
+            setTotal();
+
+            var itemName = $(".fo_name:eq(" + $(this).index(".min") + ")").text();
+            var selectNum = $(this).parent().find('input[class=text_box]').val();
+            if (selectNum != 0) {
+                $("b[class='SelectedNumShow'][id=" + itemName + "]").replaceWith('<b style="color: #222222" class="SelectedNumShow" id="' + itemName + '">数量： ' + selectNum + '</b>')
+            } else {
+                $("li[id=" + itemName + "]").remove();
+            }
+        });
+        //菜品数量
+        $(".text_box").bind('input propertychange', function () {
+            var t = $(this).parent().find('input[class*=text_box]');
+            if (parseInt(t.val()) == "" || undefined || null || isNaN(t.val())) {
+                t.val(0);
+            }
+            setTotal()
+        });
+        //删除单个菜品
+        $(".unstyled").on('click', '.removeSelected', function () {
+            var deletedId = $(this).attr('id');  //删除菜品的名称
+            $("li[id=" + deletedId + "]").remove();
+            for (i = 0; i < $(".text_box").length; i++) {
+                var t = $(".fo_name").eq(i).text();
+                if ($(".fo_name").eq(i).text() == deletedId) {
+                    $(".text_box").eq(i).val(0);
+                    setTotal()
+                }
+            }
+        });
+
+        // 取消订单
+        $("#cancelTHISorder").bind('click', function () {
+            $(".clearfix").remove();
+            for (j = 0; j < $(".text_box").length; j++) {
+                $(".text_box").eq(j).val(0);
+            }
+            setTotal();
+        });
+
+        //计算总价格
+        function setTotal() {
+            var s = 0;
+            $(".fo_item").each(function (i) {
+                var t = $(this).find('input[class*=text_box]').val();
+                var p = $(this).find('td[class*=fo_price]').text();
+                if (parseInt(t) == "" || undefined || null || isNaN(t) || isNaN(parseInt(t))) {
+                    t = 0;
+                }
+                s = s + (parseInt(t) * parseFloat(p)); // 总价
+            });
+            $("#total_price").html(s.toFixed(2)); //保留两位小数
+        }
+
+        {# $("#type").on('selected', function check_guest() {#}
+        {#    var d_type = $('#type').val();#}
+        {#    if () {#}
+        {#        $('#type_err').text('请选择订单类型！');#}
+        {#        return false#}
+        {#    } else {#}
+        {#        $('#type_err').text('');#}
+        {#        return true#}
+        {#    }#}
+        {# });#}
+
+
+
+        $("#guest").on('blur', function check_guest() {
+            var d_type = $('#type').val();
+            var guest = $('#guest').val();
+            if (d_type == "外送" && guest.length < 1) {
+                $('#guest_err').text('订单类别为外送时顾客信息不能为空！');
+                return false
+            } else {
+                $('#guest_err').text('');
+                return true
+            }
+        });
+
+        $("#phone").on('blur', function check_phone() {
+            var d_type = $('#type').val();
+            var phone = $('#phone').val();
+            if (d_type == "外送" && phone.length < 1) {
+                $('#phone_err').text('订单类别为外送时顾客联系电话不能为空！');
+                return false
+            } else {
+                $('#phone_err').text('');
+                return true
+            }
+        });
+
+        $("#address").on('blur', function check_address() {
+            var d_type = $('#type').val();
+            var address = $('#address').val();
+            if (d_type == "外送" && address.length < 1) {
+                $('#address_err').text('订单类别为外送时顾客联系地址不能为空！');
+                return false
+            } else {
+                $('#address_err').text('');
+                return true
+            }
+        });
+
+        //确认保存
+        $(".confirmOrder").on('click', function () {
+            //获取输入框的值
+            var d_type = $('#type').val();
+            var price = $('#total_price').text();
+            var guest = $('#guest').val();
+            var phone = $('#phone').val();
+            var address = $('#address').val();
+            var flag = true;
+            //简单校验
+            if (d_type.length < 1) {
+                $('#type_err').text('请选择菜品类别！');
+                flag = false;
+            }
+            if (price < 1) {
+                $('#price_err').text('菜品金额有误！');
+                flag = false;
+            }
+            if (d_type == "外送" && guest.length < 1) {
+                $('#guest_err').text('订单类别为外送时顾客信息不能为空！');
+                flag = false
+            }
+            if (d_type == "外送" && phone.length < 1) {
+                $('#phone_err').text('订单类别为外送时顾客联系电话不能为空！');
+                flag = false
+            }
+            if (d_type == "外送" && address.length < 1) {
+                $('#address_err').text('订单类别为外送时顾客联系电话不能为空！');
+                flag = false
+            }
+
+            if (flag) {
+                var content = {
+                    "type": d_type,
+                    "price": price,
+                    "guest": guest,
+                    "phone": phone,
+                    "address": address,
+                };
+                all = new Array();
+                $.each($('.unstyled').children(), function (index, item) {
+                    var numb = $(item).find('b[class=SelectedNumShow]').text().substring(4);
+                    var fid = $(item).find("span[class='foo_id']").text();
+
+                    for (var i = 0; i < numb; i++) {
+                        var info = {'f': fid, 'n': numb, 'm': $(item).find('input[class*=addNotes]').val()};
+                    }
+                    all.push(info)
+
+                });
+                content['info'] = all;
+                console.log(content);   //控制台打印content
+                var csrf = '{{ csrf_token }}';
+                $.ajax({
+                    type: 'POST',
+                    url: '/qiantai/ordering/',
+                    headers: {"X-CSRFToken": csrf},
+                    data: {'params': JSON.stringify(content)},
+                    success: function (result) {
+                        alert(result['status']);
+                        window.location.href = '/qiantai/ordering/'
+                    },
+                    error: function (XMLHttpResponse, textStatus, errorThrown) {
+                        alert(errorThrown);
+                    }
+                });
+                //重置所有
+                $('.claearfix').remove();
+                for (j = 0; j < $('.text_box').length; j++) {
+                    $('.text_box').eq(j).val(0);
+                }
+                setTotal();
+            }
+        });
+    </script>
+{% endblock %}

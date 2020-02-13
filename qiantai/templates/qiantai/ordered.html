@@ -1,0 +1,100 @@
+{% extends 'base_main.html' %}
+
+{% block title %} 订单管理 {% endblock %}
+
+{% block header %}
+    <style>
+        td {
+            word-break: keep-all;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            width: 230px
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">前台</a></li>
+            <li><a href="#">订单管理</a></li>
+        </ul>
+    </div>
+
+    {% if ok_msg != None %}
+        <div style="background-color:green;height: 50px;width: auto;">
+            &nbsp;&nbsp;&nbsp;<b style="color: white;line-height: 50px;">√{{ ok_msg }}</b>
+        </div>
+    {% endif %}
+    {% if err_msg != None %}
+        <div style="background-color:red;height: 50px;width: auto;">
+            &nbsp;&nbsp;&nbsp;<b style="color: white;line-height: 50px;">×{{ err_msg }}</b>
+        </div>
+    {% endif %}
+
+    <!-- 内容  -->
+    <div class="rightinfo">
+
+        <div class="tools">
+
+            <ul class="toolbar">
+                <li class="click"><a href="{% url 'qiantai:ordering' %}"><span>
+                    <img src="/static/images/t01.png"/></span>添加</a></li>
+                <li><span><img src="/static/images/t04.png"/></span>统计</li>
+            </ul>
+
+        </div>
+
+
+        <table class="tablelist" style="table-layout:fixed">
+            <thead>
+            <tr>
+                <th>编号</th>
+                <th>类别</th>
+                <th width="230px">菜品</th>
+                <th>总价</th>
+                <th>顾客</th>
+                <th>手机</th>
+                <th width="230px">地址</th>
+                <th width="150px">日期</th>
+                <th>状态</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if page %}
+                {% for order in page %}
+                    <tr>
+                        <td>{{ order.id }}</td>
+                        <td>{{ order.type }}</td>
+                        <td>{% for food in order.foods.all %}{{ food.name }},{% endfor %}</td>
+                        <td>￥ {{ order.price }} 元</td>
+                        <td>{% if order.guest != None %}{{ order.guest }}{% endif %}</td>
+                        <td>{% if order.phone != None %}{{ order.phone }}{% endif %}</td>
+                        <td>{% if order.address != None %}{{ order.address }}{% endif %}</td>
+                        <td>{{ order.datetime }}</td>
+                        <td>{{ order.state }}</td>
+                        <td><a href="{% url 'qiantai:ordered_detail' pk=order.id %}" class="tablelink">查看</a>
+                            <a href="{% url 'qiantai:ordered_del' pk=order.id %}" class="tablelink"> 删除</a></td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+
+        {% include 'page.html' %}
+
+    </div>
+
+{% endblock %}
+
+{% block footerjs %}
+
+    <script type="text/javascript">
+        $('.tablelist tbody tr:odd').addClass('odd');
+    </script>
+
+{% endblock %}

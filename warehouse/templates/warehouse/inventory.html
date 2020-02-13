@@ -1,0 +1,151 @@
+{% extends 'base_main.html' %}
+
+{% block title %} 库存盘点 {% endblock %}
+
+{% block header %}
+    <style>
+        td {
+            border: solid 1px #ced9df;;
+            background: aquamarine;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">库存</a></li>
+            <li><a href="#">库存盘点</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        <div class="formtitle"><span>库存盘点单</span></div>
+        <table class="tablelist" style="table-layout:fixed">
+            <thead>
+            <tr>
+                <th style="width: 100px">库存编号</th>
+                <th>物料名称</th>
+                <th>库存数量</th>
+                <th>入库日期</th>
+                <th>生产日期</th>
+                <th>保质期（天）</th>
+                <th>有效期至</th>
+                <th>盘点数量</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% if storage %}
+                {% for item in storage %}
+                    <tr id="storage_id{{ item.id }}">
+                        <td>{{ item.id }}</td>
+                        <td>{{ item.name }}</td>
+                        <td>{{ item.num }}</td>
+                        <td>{{ item.date }}</td>
+                        <td>{{ item.md }}</td>
+                        <td>{{ item.gd }}</td>
+                        <td>待配置</td>
+                        <td id="count{{ item.id }}" contenteditable="true"
+                            style="background-color:white ">{{ item.num }}</td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+        <div style="float: right; margin:20px 10px">
+            <button class="btn btn-success" onclick="update()">提交变更</button>
+        </div>
+        <br><br><br><br><br>
+        <div class="formtitle"><span>报废登记</span></div>
+        <form class="form-vertical" method="post" >
+            <ul class="forminfo">
+                <li><label for="storage">库存编号</label>
+                    <input type="text" name="storage" id="storage" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="storage_err" style="color: red;"></div>
+                </li>
+                <li><label for="num">报废数量</label>
+                    <input type="number" name="num" id="num" min="0" class="dfinput"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="num_err" style="color: red;"></div>
+                </li>
+                <li><label for="reason">报废原因</label>
+                    <textarea name="reason" cols="" rows="" class="textinput" id="reason"></textarea>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="reason_err" style="color: red;"></div>
+                </li>
+                <li><label for="button">&nbsp;</label>
+                    <input name="" type="button" id="button" class="btn confirmJunk" value="提交"/>
+                </li>
+            </ul>
+        </form>
+    </div>
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript">
+
+        //盘点变更
+        function update() {
+            var content = {};
+            $.each($('tr[id^=storage_id]'), function (index, item) {
+                var id = this.id.substring(10);
+                content[id] = $('#count' + id).text()
+            });
+            console.log(content);
+            $.ajax({
+                type: "POST",
+                url: "/warehouse/inventory/",
+                data: {content: JSON.stringify(content)},
+                success: function (result) {
+                    alert(result["status"]);
+                    $(window).attr('location', '/warehouse/inventory/')
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(errorThrown)
+                },
+            });
+        }
+
+        //报废登记
+        $('.confirmJunk').on('click', function () {
+            var storage = $('#storage').val();
+            var num = $('#num').val();
+            var reason = $('#reason').val();
+            var flag = true;
+
+            if (storage.length < 1) {
+                $('#storage_err').text('请填写要报废物品的库存编号！');
+                flag = false
+            }
+            if (num < 1) {
+                $('#num_err').text('请填写要报废物品的数量！');
+                flag = false
+            }
+            if (reason.length < 1) {
+                $('#reason_err').text('请填写报废原因！');
+                flag = false
+            }
+
+            if (flag) {
+                var content = {
+                    "storage": storage,
+                    "num": num,
+                    "reason": reason
+                };
+                $.ajax({
+                    type: "POST",
+                    url: "/warehouse/scrap/",
+                    data: {"content": JSON.stringify(content)},
+                    success: function (result) {
+                        alert(result['status']);
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(errorThrown)
+                    }
+                })
+            }
+        })
+    </script>
+{% endblock %}

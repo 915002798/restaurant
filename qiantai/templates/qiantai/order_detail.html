@@ -1,0 +1,111 @@
+{% extends 'base_main.html' %}
+
+{% block header %}
+    <style>
+        select {
+            height: 32px;
+            width: 100px;
+            border-top: solid 1px #a7b5bc;
+            border-left: solid 1px #a7b5bc;
+            border-right: solid 1px #ced9df;
+            border-bottom: solid 1px #ced9df;
+        }
+
+        .text_box {
+            height: 20px;
+            width: 30px;
+            border: solid 1px #e9f2f7;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">前台</a></li>
+            <li><a href="{% url 'qiantai:ordered' num=1 %}">订单管理</a></li>
+            <li><a href="#">查看订单</a></li>
+        </ul>
+    </div>
+
+    <div class="formbody">
+
+        <div class="formtitle"><span>基本信息</span></div>
+
+        <form id="food_add_form" class="form-vertical" action="#" method="post">
+            {% csrf_token %}
+            <ul class="forminfo">
+                <li><label for="order_id">订单编号：</label>
+                    <p id="order_total" style="height: 30px"><label id="total_price">{{ order.id }}</label></p>
+                </li>
+                <li><label for="state">已选菜品:</label><br><br>
+
+                    <ul class="unstyled" style="border:solid 1px #a7b5bc;width: 600px">
+                        {% for detail in details %}
+                            <li class="clearfix" style="width: 550px;margin-left: 20px;margin-top: 10px"
+                                id="{{ detail.food.name }}">
+                                <span style="display:none" class="foo_id" id="">{{ detail.food.id }}</span>
+                                <span style="float:left;width:120px;margin-right:20px">{{ detail.food.name }}</span>
+                                <input style="width: 300px" class="text_box addNotes" type="text"
+                                       value="{{ detail.food.mark }}"
+                                       placeholder="备注">
+                                <b style="color: #222222" class="SelectedNumShow"
+                                   id="{{ detail.food.name }}">数量：{{ detail.num }}</b>
+                                <button class="removeSelected" id="' + itemName + '" style="float:right;width: 20px;"
+                                        type="button">×
+                                </button>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+                <li><label for="type">类别:</label>
+                    <select name="type" id="type" required="">
+                        <option value="">--- 请选择 ---</option>
+                        <option value="堂食">堂食</option>
+                        <option value="打包">打包</option>
+                        <option value="外送">外送</option>
+                    </select>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="type_err" style="color: red;"></div>
+                </li>
+                <li><label>总价(￥):</label>
+                    <p id="order_total" style="height: 30px"><label id="total_price">{{ order.price }}</label></p>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="price_err" style="color: red;"></div>
+                </li>
+                <li><label for="guest">* 顾客:</label>
+                    <input type="text" name="guest" id="guest" class="dfinput" value="{{ order.guest }}"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="guest_err" style="color: red;"></div>
+                </li>
+                <li><label for="phone">* 手机:</label>
+                    <input type="text" name="phone" id="phone" class="dfinput" value="{{ order.phone }}"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="phone_err" style="color: red;"></div>
+                </li>
+                <li><label for="address">* 地址:</label>
+                    <input type="text" name="address" id="address" class="dfinput" value="{{ order.address }}"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="address_err" style="color: red;"></div>
+                </li>
+                <li><label for="address">状态</label>
+                    <input type="text" name="address" id="address" class="dfinput" value="{{ order.state }}"/>
+                    <!-- 错误提示信息 -->
+                    <div class="col-md-12" id="address_err" style="color: red;"></div>
+                </li>
+                <li><i>（注：带 * 号的项为订单类别为“外送”时的必填项，其他类别选填即可。）</i></li>
+{#                <li><label for="submit">&nbsp;</label>#}
+{#                    <input name="" type="button" id="submit" class="btn confirmOrder" value="确认保存"/>&nbsp;&nbsp;&nbsp;#}
+{#                    <button id="cancelTHISorder" type="button" class="btn cancelOrder">取消订单</button>#}
+{#                </li>#}
+            </ul>
+        </form>
+    </div>
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript">
+
+    </script>
+{% endblock %}

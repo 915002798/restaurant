@@ -1,0 +1,86 @@
+{% extends 'base_main.html' %}
+{% load static %}
+
+{% block title %}菜品管理{% endblock %}
+
+{% block right %}
+
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">前台</a></li>
+            <li><a href="#">菜单管理</a></li>
+        </ul>
+    </div>
+    {% if ok_msg != None %}
+        <div style="background-color:green;height: 50px;width: auto;">
+            &nbsp;&nbsp;&nbsp;<b style="color: white;line-height: 50px;">√{{ ok_msg }}</b>
+        </div>
+    {% endif %}
+    {% if err_msg != None %}
+        <div style="background-color:red;height: 50px;width: auto;">
+            &nbsp;&nbsp;&nbsp;<b style="color: white;line-height: 50px;">×{{ err_msg }}</b>
+        </div>
+    {% endif %}
+
+    <div class="rightinfo">
+
+        <div class="tools">
+
+            <ul class="toolbar">
+                <li class="click"><a href="{% url 'qiantai:food_add' %}"><span><img
+                        src="/static/images/t01.png"/></span>添加</a></li>
+                <li><span><img src="/static/images/t04.png"/></span>统计</li>
+            </ul>
+
+        </div>
+
+        <table class="imgtable">
+
+            <thead>
+            <tr>
+                <th width="100px;">缩略图</th>
+                <th>编号</th>
+                <th>菜品名</th>
+                <th>描述</th>
+                <th>种类</th>
+                <th>单价</th>
+                <th>可销售</th>
+                <th>评分</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+
+            <tbody id="tbody">
+            {% if page %}
+                {% for food in page %}
+                    <tr>
+                        <td class="imgtd"><img style="width: 80px;" src="{{ food.image }}"/></td>
+                        <td>{{ food.pk }}</td>
+                        <td>{{ food.name }}</td>
+                        <td> {% if food.describe != None %}{{ food.describe }}{% endif %}</td>
+                        <td>{{ food.type }}</td>
+                        <td>￥ {{ food.price }} 元</td>
+                        <td> {% if food.available == True %} 是 {% else %} 否 {% endif %} </td>
+                        <td>{{ food.score }}</td>
+                        <td><a href="{% url 'qiantai:food_edit' pk=food.pk %}" class="tablelink">修改</a>
+                            <a href="{% url 'qiantai:food_del' pk=food.pk %}" class="tablelink"> 删除</a></td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+
+        {% include 'page.html' %}
+
+    </div>
+
+{% endblock %}
+
+{% block footerjs %}
+
+    <script type="text/javascript">
+        $('.imgtable tbody tr:odd').addClass('odd');
+    </script>
+
+{% endblock %}

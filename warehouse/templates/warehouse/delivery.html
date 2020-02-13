@@ -1,0 +1,81 @@
+{% extends 'base_main.html' %}
+
+{% block title %} 采购入库 {% endblock %}
+
+{% block header %}
+    <style>
+        td {
+            border: solid 1px #ced9df;;
+            background: aquamarine;
+        }
+    </style>
+{% endblock %}
+
+{% block right %}
+    <div class="place">
+        <span>位置：</span>
+        <ul class="placeul">
+            <li><a href="#">库存</a></li>
+            <li><a href="#">采购入库</a></li>
+        </ul>
+    </div>
+    <div class="rightinfo">
+        {% for purchase in purchases %}
+            <div class="formtitle">
+                <span>采购订单号：{{ purchase.id }} &nbsp; &nbsp;到货期限：{{ purchase.date }}-至-{{ purchase.term }}</span></div>
+            <table class="tablelist">
+                <thead>
+                <tr>
+                    <th>物料编号</th>
+                    <th>物料名称</th>
+                    <th>数量</th>
+                    <th>未入库数量</th>
+                    <th>入库数量(可修改)</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for material in purchase.materials %}
+                    <tr>
+                        <td>{{ material.id }}</td>
+                        <td>{{ material.name }}</td>
+                        <td>{{ material.num }}</td>
+                        <td>{{ material.left }}</td>
+                        <td id="pur{{ purchase.id }}count{{ material.id }}" contenteditable="true" style="background-color:white ">{{ material.left }}</td>
+                    </tr>
+                {% endfor %}
+
+                </tbody>
+            </table>
+            <div style="float: right; margin:20px 20px;">
+                <button class="btn btn-success" id="confirm{{ purchase.id }}" onclick="confirm(this)">确认入库</button>
+            </div>
+            <br><br><br><br><br>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+{% block footerjs %}
+    <script type="text/javascript">
+        function confirm(e) {
+            var id = e.id.substring(7);
+            var content = {'id': id, 'materials': []};
+            $.each($('td[id^=pur' + id + 'count]'), function (index, item) {
+                content['materials'].push({'id': item.id.split('count')[1], 'count': $(item).text()});
+            });
+            console.log(content);
+
+            $.ajax({
+                type: 'POST',
+                url: '/warehouse/delivery/',
+                data: {'content': JSON.stringify(content)},
+                success: function (result) {
+                    alert(result['status']);
+                    $(window).attr('location', '/warehouse/delivery/')
+                },
+                error:function (XMLHttpRequest, textStatus, errorThrow) {
+                    alert(errorThrow)
+                }
+            })
+        }
+    </script>
+{% endblock %}
